@@ -1,4 +1,4 @@
-use crate::{messages::Message, schemas::Collection};
+use crate::schemas::Collection;
 use fltk::{
     app::redraw,
     button::Button,
@@ -9,9 +9,7 @@ use fltk::{
     input::{Input, MultilineInput},
     misc::Progress,
     prelude::*,
-    table,
-    table::{Table, TableContext},
-    text::{TextBuffer, TextDisplay},
+    text::TextDisplay,
     widget_extends,
 };
 
@@ -87,20 +85,9 @@ impl MenuButton {
                 redraw();
                 true
             }
-            Event::Focus => {
-                b.set_color(Color::Cyan);
-                redraw();
-                true
-            }
-            Event::Unfocus => {
-                b.set_color(Color::White);
-                println!("unfocus");
-                redraw();
-                true
-            }
             _ => false,
         });
-        let mut title = TextDisplay::new(x+30, y+78, 0, 0, None).with_label(label);
+        let mut title = TextDisplay::new(x + 30, y + 78, 0, 0, None).with_label(label);
         title.set_label_color(Color::White);
         title.set_label_size(10);
         Self { mbtn }
@@ -429,5 +416,21 @@ pub fn create_collection_table(
             }
             x_pos += col_four_width;
         }
+    }
+}
+
+pub(crate) fn change_color(
+    b: &mut Button,
+    b1: &mut MenuButton,
+    b2: &mut MenuButton,
+    b3: &mut MenuButton,
+    b4: &mut MenuButton,
+) {
+    if b.color() == Color::White {
+        b.set_color(Color::Cyan);
+        b1.set_color(Color::White);
+        b2.set_color(Color::White);
+        b3.set_color(Color::White);
+        b4.set_color(Color::White);
     }
 }
