@@ -18,9 +18,12 @@ use fltk::{
 use helpers::get_collections;
 use messages::Message;
 use mongodb::Database;
-use widgets::droptypes::create_droptypes_table;
-use crate::widgets::{sidebar::MenuButton, animation::AnimationProgress};
-use widgets::MainTitle;
+use widgets::{
+    animation::AnimationProgress,
+    droptypes::{create_droptypes_table, DropTypeFrame},
+    sidebar::MenuButton,
+    MainTitle,
+};
 
 type MyResult<T> = Result<T, MyError>;
 const BAR_SPEED: f64 = 0.00018;
@@ -63,6 +66,7 @@ async fn main() -> MyResult<()> {
     let col_width = 260;
     let drop_frame_height = 180;
     let drop_frame_width = 240;
+    let mut droptypes_vector: Vec<DropTypeFrame> = Vec::new();
     droptypes_scroll.end();
 
     // hide all widgets for starting animation
@@ -214,7 +218,7 @@ async fn main() -> MyResult<()> {
                             x_pos,
                             y_pos,
                             &droptypes,
-                            tx.clone()
+                            &mut droptypes_vector,
                         );
                         droptypes_scroll.redraw();
                     }
@@ -222,7 +226,9 @@ async fn main() -> MyResult<()> {
                 }
             }
             Some(Message::DropTypeModify(frame)) => {
-
+                println!("here");
+                droptypes_scroll.hide();
+                redraw();
             }
             Some(Message::Error) => {
                 // todo!()

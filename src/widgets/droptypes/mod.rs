@@ -16,7 +16,7 @@ pub struct DropTypeFrame {
 }
 
 impl DropTypeFrame {
-    pub fn new(x: i32, y: i32, w: i32, h: i32, title: &str, tx: Sender<Message>) -> Self {
+    pub fn new(x: i32, y: i32, w: i32, h: i32, title: &str) -> Self {
         let mut label = String::new();
         if title.len() > 30 {
             label = title[0..=30].to_string() + "...";
@@ -46,6 +46,7 @@ impl DropTypeFrame {
             Event::Push => {
                 set_cursor(Cursor::Hand);
                 redraw();
+ 
                 true
             }
             Event::Focus => {
@@ -54,7 +55,6 @@ impl DropTypeFrame {
             }
             _ => false,
         });
-        dt_frame.emit(tx, Message::DropTypeModify(dt_frame.clone()));
         Self { dt_frame }
     }
 }
@@ -70,7 +70,7 @@ pub fn create_droptypes_table(
     mut x_pos: i32,
     mut y_pos: i32,
     droptypes: &Vec<DropType>,
-    tx: Sender<Message>,
+    droptypes_vector: &mut Vec<DropTypeFrame>
 ) {
     let mut title_incramentor = 0;
     for _row in 0..div_ceil(droptypes_len, number_of_cols) as i32 {
@@ -82,9 +82,9 @@ pub fn create_droptypes_table(
                     drop_frame_width,
                     drop_frame_height,
                     &droptypes[title_incramentor as usize].title,
-                    tx.clone(),
                 );
                 droptypes_scroll.add(&*result);
+                droptypes_vector.push(result);
                 x_pos += col_width;
                 title_incramentor += 1;
             } else {
