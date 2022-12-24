@@ -1,0 +1,18 @@
+[package]
+name = "dms_desktop"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+fltk = "1.2"
+tokio = { version = "1", features = ["full"] }
+serde = "1.0.150"
+futures = "0.3"
+dotenv = "0.15.0"
+
+[dependencies.mongodb]
+version = "2.3.0"
+default-features = false
+features = ["async-std-runtime"]
