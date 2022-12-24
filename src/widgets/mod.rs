@@ -1,4 +1,4 @@
-use crate::schemas::Collection;
+use crate::schemas::{DropType, Product};
 use fltk::{
     app::redraw,
     button::Button,
@@ -12,6 +12,7 @@ use fltk::{
     text::TextDisplay,
     widget_extends,
 };
+pub mod droptypes;
 
 widget_extends!(MenuButton, Button, mbtn);
 widget_extends!(ActionButton, Button, act_btn);
@@ -69,13 +70,22 @@ impl MenuButton {
         mbtn.set_frame(FrameType::RoundedBox);
         mbtn.set_selection_color(Color::Cyan);
         mbtn.clear_visible_focus();
+        mbtn.set_label(label);
+        mbtn.set_label_size(0);
         if first_select {
             mbtn.set_color(Color::Cyan);
+            mbtn.set_label_color(Color::Cyan);
         } else {
             mbtn.set_color(Color::White);
+            mbtn.set_label_color(Color::White);
         }
         mbtn.handle(move |b, ev| match ev {
             Event::Enter => {
+                set_cursor(Cursor::Hand);
+                redraw();
+                true
+            }
+            Event::Push => {
                 set_cursor(Cursor::Hand);
                 redraw();
                 true
@@ -241,7 +251,7 @@ pub fn update_add_collection_table(
     col_two: &mut Vec<CollectionFrame>,
     col_three: &mut Vec<ActionButton>,
     col_four: &mut Vec<ActionButton>,
-    collection: &Collection,
+    collection: &DropType,
     row_height: i32,
 ) {
     for col in 0..number_of_cols {
@@ -284,8 +294,8 @@ pub fn create_find_table(
     col_three_width: i32,
     col_four_width: i32,
     row_height: i32,
-    collection: Collection,
-    collections: &Vec<Collection>,
+    collection: DropType,
+    collections: &Vec<DropType>,
     col_one: &mut Vec<Frame>,
     col_two: &mut Vec<Frame>,
     col_three: &mut Vec<ActionButton>,
@@ -334,8 +344,8 @@ pub fn create_find_table(
 pub fn get_row(
     number_of_cols: i32,
     number_of_rows: i32,
-    collections: &Vec<Collection>,
-    collection: &Collection,
+    collections: &Vec<DropType>,
+    collection: &DropType,
 ) -> Result<i32, ()> {
     let mut row_value = 0;
     for col in 0..number_of_cols {
@@ -360,7 +370,7 @@ pub fn create_collection_table(
     col_four_width: i32,
     mut x_pos: i32,
     mut y_pos: i32,
-    collections: &Vec<Collection>,
+    collections: &Vec<DropType>,
     row_height: i32,
     col_one: &mut Vec<CollectionFrame>,
     col_two: &mut Vec<CollectionFrame>,
@@ -419,18 +429,72 @@ pub fn create_collection_table(
     }
 }
 
-pub(crate) fn change_color(
-    b: &mut Button,
-    b1: &mut MenuButton,
-    b2: &mut MenuButton,
-    b3: &mut MenuButton,
-    b4: &mut MenuButton,
+pub fn create_product_table(
+    product_scroll: &mut Scroll,
+    number_of_cols: i32,
+    number_of_rows: i32,
+    col_one_width: i32,
+    col_two_width: i32,
+    col_three_width: i32,
+    col_four_width: i32,
+    mut x_pos: i32,
+    mut y_pos: i32,
+    products: &Vec<Product>,
+    row_height: i32,
+    col_one: &mut Vec<CollectionFrame>,
+    col_two: &mut Vec<CollectionFrame>,
+    col_three: &mut Vec<ActionButton>,
+    col_four: &mut Vec<ActionButton>,
 ) {
-    if b.color() == Color::White {
-        b.set_color(Color::Cyan);
-        b1.set_color(Color::White);
-        b2.set_color(Color::White);
-        b3.set_color(Color::White);
-        b4.set_color(Color::White);
+    for col in 0..number_of_cols {
+        if col == 0 {
+            for row in 0..number_of_rows {
+                let result = CollectionFrame::new(
+                    x_pos,
+                    y_pos,
+                    col_one_width,
+                    row_height,
+                    &products[row as usize].name,
+                );
+                product_scroll.add(&*result);
+                col_one.push(result);
+                y_pos += row_height;
+            }
+            x_pos += col_one_width;
+            y_pos = 0;
+        } else if col == 1 {
+            for row in 0..number_of_rows {
+                let result = CollectionFrame::new(
+                    x_pos,
+                    y_pos,
+                    col_two_width,
+                    row_height,
+                    &products[row as usize].description,
+                );
+                product_scroll.add(&*result);
+                col_two.push(result);
+                y_pos += row_height;
+            }
+            x_pos += col_two_width;
+            y_pos = col_three_width / 2;
+        } else if col == 2 {
+            for row in 0..number_of_rows {
+                let result = ActionButton::new(x_pos, y_pos, col_three_width, 30, "Update");
+                product_scroll.add(&*result);
+                col_three.push(result);
+                y_pos += row_height;
+            }
+            x_pos += col_three_width + 10;
+            y_pos = col_four_width / 2;
+        } else {
+            for row in 0..number_of_rows {
+                let result = ActionButton::new(x_pos, y_pos, col_four_width, 30, "Delete");
+                product_scroll.add(&*result);
+                col_four.push(result);
+                y_pos += row_height;
+            }
+            x_pos += col_four_width;
+        }
     }
 }
+

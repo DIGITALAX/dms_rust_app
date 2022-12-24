@@ -14,13 +14,13 @@ pub struct Product {
     pub images: String,
     pub slug: String,
     pub price: u32,
-    pub currency: Currency,
+    pub currency: String,
     pub amount_sold: u32,
     pub sold_out: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Collection {
+pub struct DropType {
     pub title: String,
     pub description: String,
 }

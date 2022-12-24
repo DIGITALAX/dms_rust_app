@@ -1,21 +1,12 @@
 use mongodb::Database;
-use crate::widgets::MenuButton;
+use crate::{widgets::MenuButton};
 
 // add generic T meaning that we could h
 #[derive(Clone)]
-pub enum MainMessage {
+pub enum Message {
     Start,
-    MenuSelect(MenuButton, MenuButton, MenuButton, MenuButton, MenuButton),
+    MenuSelect(MenuButton, MenuButton, MenuButton, MenuButton, MenuButton, Option<Database>),
+    DropTypes(Option<Database>),
     Ready(Option<Database>),
-    Error,
-}
-
-pub enum DropTypeMessage {
-    Start,
-    Ready(Option<Database>),
-    // Reset(Collection),
-    // Insert(String),
-    // Update(i32),
-    // Delete(String),
     Error,
 }

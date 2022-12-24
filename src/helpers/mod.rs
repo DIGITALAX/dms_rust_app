@@ -1,4 +1,4 @@
-use crate::schemas::{Collection, Product, User};
+use crate::schemas::{DropType, Product, User};
 use fltk::{
     app::{redraw, set_background2_color, set_background_color, set_color, set_font, App},
     button::{Button, CheckButton},
@@ -46,12 +46,12 @@ pub async fn get_product(
 pub async fn get_collection(
     database: Option<Database>,
     _title: String,
-) -> mongodb::error::Result<Vec<Collection>> {
-    let mut result: Vec<Collection> = Vec::new();
+) -> mongodb::error::Result<Vec<DropType>> {
+    let mut result: Vec<DropType> = Vec::new();
     println!("here {}", _title);
     match database {
         Some(db) => {
-            let collections = db.collection::<Collection>("droptypes");
+            let collections = db.collection::<DropType>("droptypes");
             let mut cursor = collections
                 .find(doc! {"title": _title.to_lowercase()}, None)
                 .await?;
@@ -83,14 +83,15 @@ pub async fn get_user(
     Ok(result)
 }
 
-pub async fn get_products(database: Option<Database>) -> mongodb::error::Result<Vec<Product>> {
+pub async fn get_products(
+    database: Option<Database>,
+) -> mongodb::error::Result<Vec<Product>> {
     let mut result: Vec<Product> = Vec::new();
     match database {
         Some(db) => {
             let products = db.collection::<Product>("products");
-            let find_opt = FindOptions::builder().sort(doc! { "name": 1i32 }).build();
-            let mut cursor = products.find(doc! {}, find_opt).await?;
-
+            // let find_opt = FindOptions::builder().sort(doc! { "name": 1i32 }).build();
+            let mut cursor = products.find(doc! {}, None).await?;
             while let Some(product) = cursor.try_next().await? {
                 result.push(product);
             }
@@ -102,11 +103,11 @@ pub async fn get_products(database: Option<Database>) -> mongodb::error::Result<
 
 pub async fn get_collections(
     database: Option<Database>,
-) -> mongodb::error::Result<Vec<Collection>> {
-    let mut result: Vec<Collection> = Vec::new();
+) -> mongodb::error::Result<Vec<DropType>> {
+    let mut result: Vec<DropType> = Vec::new();
     match database {
         Some(db) => {
-            let collections = db.collection::<Collection>("droptypes");
+            let collections = db.collection::<DropType>("droptypes");
             let find_opt = FindOptions::builder().sort(doc! { "name": 1i32 }).build();
             let mut cursor = collections.find(doc! {}, find_opt).await?;
             while let Some(collection) = cursor.try_next().await? {
@@ -157,13 +158,13 @@ pub async fn add_product(
 
 pub async fn add_collection(
     database: Option<Database>,
-    _collection: Collection,
-) -> mongodb::error::Result<Vec<Collection>> {
+    _collection: DropType,
+) -> mongodb::error::Result<Vec<DropType>> {
     let mut result = Vec::new();
     let mut id = String::new();
     match database {
         Some(db) => {
-            let collections = db.collection::<Collection>("droptypes");
+            let collections = db.collection::<DropType>("droptypes");
             let collection = collections.insert_one(_collection, None).await?;
             let a = collection.inserted_id;
             match a {
@@ -189,7 +190,7 @@ pub async fn delete_collection(
     let mut result = String::new();
     match database {
         Some(db) => {
-            let collections = db.collection::<Collection>("droptypes");
+            let collections = db.collection::<DropType>("droptypes");
             println!("title {:?}", _title);
             let collection = collections
                 .find_one_and_delete(doc! {"title": _title.to_lowercase()}, None)

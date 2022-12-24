@@ -482,6 +482,7 @@ dependencies = [
  "fltk",
  "futures",
  "mongodb",
+ "num-integer",
  "serde",
  "tokio",
 ]
