@@ -1,4 +1,4 @@
-use crate::widgets::AnimationProgress;
+use crate::widgets::animation::AnimationProgress;
 use fltk::{enums::Color, prelude::WidgetExt};
 
 pub(crate) fn start_animation(animation: &mut bool, bar: &mut AnimationProgress) {

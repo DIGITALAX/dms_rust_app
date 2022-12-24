@@ -19,7 +19,8 @@ use helpers::get_collections;
 use messages::Message;
 use mongodb::Database;
 use widgets::droptypes::create_droptypes_table;
-use widgets::{AnimationProgress, MainTitle, MenuButton};
+use crate::widgets::{sidebar::MenuButton, animation::AnimationProgress};
+use widgets::MainTitle;
 
 type MyResult<T> = Result<T, MyError>;
 const BAR_SPEED: f64 = 0.00018;
@@ -33,33 +34,35 @@ async fn main() -> MyResult<()> {
     set_background_color(17, 19, 19);
     set_color(Color::White, 231, 242, 251);
     set_color(Color::Cyan, 187, 238, 255);
+    set_color(Color::DarkYellow, 201, 216, 228);
     let mut app_window = Window::default()
         .with_size(1200, 900)
         .with_label("Drop Management System");
-    let mut main_text = MainTitle::new(600, 400, 0, 0, "Drop Management System", 30);
+    let mut main_text = MainTitle::new(600, 400, 0, 0, "Drop Management System", 20);
     let mut anim_bar = AnimationProgress::new();
     let mut animation = false;
 
     // sidebar window
-    let mut sidebar_window = Window::new(0, 0, 150, 900, None);
+    let mut sidebar_window = Window::new(0, 100, 120, 900, None);
     sidebar_window.begin();
-    let mut drafts_button = MenuButton::new(40, 200, 60, 60, "Drafts", true);
-    let mut drop_button = MenuButton::new(40, 300, 60, 60, "Drop Types", false);
-    let mut product_button = MenuButton::new(40, 400, 60, 60, "Products", false);
-    let mut pricing_button = MenuButton::new(40, 500, 60, 60, "Pricing", false);
-    let mut admin_button = MenuButton::new(40, 600, 60, 60, "Admin", false);
+    let mut drafts_button = MenuButton::new(40, 100, 60, 60, "Drafts", true);
+    let mut drop_button = MenuButton::new(40, 200, 60, 60, "Drop Types", false);
+    let mut product_button = MenuButton::new(40, 300, 60, 60, "Products", false);
+    let mut pricing_button = MenuButton::new(40, 400, 60, 60, "Pricing", false);
+    let mut admin_button = MenuButton::new(40, 500, 60, 60, "Admin", false);
     sidebar_window.end();
 
     // drop types window
-    let mut droptypes_scroll = Scroll::new(200, 150, 950, 700, None);
+    let mut droptypes_scroll = Scroll::new(130, 130, 1050, 750, None);
     droptypes_scroll.set_type(ScrollType::Vertical);
     droptypes_scroll.begin();
     let number_of_cols = 4;
-    let x_pos = 200;
+    let x_pos = 130;
     let y_pos = 0;
-    let row_height = 250;
-    let col_width = 250;
-    let drop_frame_size = 170;
+    let row_height = 200;
+    let col_width = 260;
+    let drop_frame_height = 180;
+    let drop_frame_width = 240;
     droptypes_scroll.end();
 
     // hide all widgets for starting animation
@@ -171,7 +174,7 @@ async fn main() -> MyResult<()> {
             Some(Message::Ready(db)) => {
                 stop_animation(&mut animation, &mut anim_bar);
                 app_window.remove(&*anim_bar);
-                main_text.set_pos(600, 50);
+                main_text.set_pos(200, 50);
                 sidebar_window.show();
                 redraw();
                 tx.send(Message::DropTypes(db));
@@ -204,17 +207,22 @@ async fn main() -> MyResult<()> {
                             &mut droptypes_scroll,
                             number_of_cols,
                             droptypes.len() as i32,
-                            drop_frame_size,
+                            drop_frame_height,
+                            drop_frame_width,
                             row_height,
                             col_width,
                             x_pos,
                             y_pos,
                             &droptypes,
+                            tx.clone()
                         );
                         droptypes_scroll.redraw();
                     }
                     Err(_) => {}
                 }
+            }
+            Some(Message::DropTypeModify(frame)) => {
+
             }
             Some(Message::Error) => {
                 // todo!()
