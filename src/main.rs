@@ -11,15 +11,22 @@ use error::MyError;
 use fltk::{
     app::{channel, redraw, set_background_color, set_color, set_font, App},
     enums::{Color, Event, Font},
-    group::{Scroll, ScrollType, Group},
+    group::{Group, Scroll, ScrollType},
     prelude::*,
+    text::TextDisplay,
     window::Window,
 };
 use helpers::get_collections;
 use messages::Message;
 use mongodb::Database;
 use widgets::{
-    animation::AnimationProgress, droptypes::create_droptypes_table, sidebar::MenuButton, MainTitle,
+    animation::AnimationProgress,
+    droptypes::{
+        create_droptypes_table, CRUDButton, DropTypeInput, DropTypeInputLabel, DropTypeMultiInput,
+        DropTypeUnder, ReturnButton,
+    },
+    sidebar::MenuButton,
+    MainTitle,
 };
 
 type MyResult<T> = Result<T, MyError>;
@@ -65,13 +72,45 @@ async fn main() -> MyResult<()> {
     let drop_frame_width = 240;
     droptypes_scroll.end();
 
-    let add_droptype = Group::new(200, 130, 1050, 750, None);
+    // add
+    let mut add_droptype = Group::new(200, 130, 1050, 750, None);
     add_droptype.begin();
+    let mut add_return = ReturnButton::new(200, 160, 40, 20, "Return");
+    let mut dt_add_title =
+        TextDisplay::new(310, 240, 0, 0, None).with_label(&"Add Drop Types".to_uppercase());
+    dt_add_title.set_label_color(Color::White);
+    dt_add_title.set_label_size(25);
+    let _dt_under_input_tit = DropTypeUnder::new(238, 298, 354, 44);
+    let _dt_add_label = DropTypeInputLabel::new(240, 290, "Drop Type Title");
+    let _dt_add_title_input = DropTypeInput::new(240, 300, 350, 40, None);
+    let _dt_under_input_des = DropTypeUnder::new(238, 428, 354, 304);
+    let _dt_add_label = DropTypeInputLabel::new(240, 420, "Drop Type Description");
+    let _dt_add_description_input = DropTypeMultiInput::new(240, 430, 350, 300, None);
+    let mut add_button = CRUDButton::new(240, 770, 350, 40, "Add Drop Type");
     add_droptype.end();
+
+    // update
+    let mut update_droptype = Group::new(200, 130, 1050, 750, None);
+    update_droptype.begin();
+    let mut update_return = ReturnButton::new(200, 160, 40, 20, "Return");
+    let mut dt_update_title =
+        TextDisplay::new(310, 240, 0, 0, None).with_label(&"Update Drop Type".to_uppercase());
+    dt_update_title.set_label_color(Color::White);
+    dt_update_title.set_label_size(25);
+    let _dt_update_under_input_tit = DropTypeUnder::new(238, 298, 354, 44);
+    let _dt_update_label = DropTypeInputLabel::new(240, 290, "Drop Type Title");
+    let mut dt_update_title_input = DropTypeInput::new(240, 300, 350, 40, None);
+    let _dt_update_under_input_des = DropTypeUnder::new(238, 428, 354, 304);
+    let _dt_update_label = DropTypeInputLabel::new(240, 420, "Drop Type Description");
+    let mut dt_update_description_input = DropTypeMultiInput::new(240, 430, 350, 300, None);
+    let mut update_button = CRUDButton::new(240, 770, 350, 40, "Update Drop Type");
+    update_droptype.end();
 
     // hide all widgets for starting animation
     sidebar_window.hide();
     droptypes_scroll.hide();
+    add_droptype.hide();
+    update_droptype.hide();
 
     app_window.make_resizable(true);
     app_window.end();
@@ -166,6 +205,10 @@ async fn main() -> MyResult<()> {
         ),
     );
 
+    add_button.emit(tx.clone(), Message::DropTypeAdd);
+    update_button.emit(tx.clone(), Message::DropTypeUpdate);
+    update_return.emit(tx.clone(), Message::ReturnDropType);
+
     tx.send(Message::Start);
 
     while app.wait() {
@@ -199,6 +242,8 @@ async fn main() -> MyResult<()> {
             }
             Some(Message::DropTypes(db)) => {
                 droptypes_scroll.show();
+                add_droptype.hide();
+                update_droptype.hide();
                 match get_collections(db).await {
                     Ok(droptypes) => {
                         create_droptypes_table(
@@ -220,9 +265,27 @@ async fn main() -> MyResult<()> {
                 }
             }
             Some(Message::DropTypeModify(frame)) => {
-                println!("in modify");
                 droptypes_scroll.hide();
+                // dt_update_title_input.set_value();
+                // dt_update_description_input.set_value();
+                update_droptype.update_child(&mut *dt_update_title_input);
+                update_droptype.update_child(&mut *dt_update_description_input);
+                update_droptype.show();
                 redraw();
+            }
+            Some(Message::DropTypeAdd) => {
+                update_droptype.hide();
+                droptypes_scroll.hide();
+                // add in products attached to droptype in group
+                add_droptype.show();
+                redraw();
+            }
+            Some(Message::DropTypeUpdate) => {}
+            Some(Message::ReturnDropType) => {
+                update_droptype.hide();
+                add_droptype.hide();
+                // add in products attached to droptype in group
+                droptypes_scroll.show();
             }
             Some(Message::Error) => {}
             None => {

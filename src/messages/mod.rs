@@ -9,5 +9,8 @@ pub enum Message {
     DropTypes(Option<Database>),
     Ready(Option<Database>),
     DropTypeModify(Button),
+    DropTypeAdd,
+    DropTypeUpdate,
+    ReturnDropType,
     Error,
 }
