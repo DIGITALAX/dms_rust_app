@@ -316,9 +316,9 @@ async fn main() -> MyResult<()> {
                         delete_button.set_color(Color::Green);
                         delete_button.set_label("Success");
                         dt_update_title_input.set_value("");
-                        dt_update_title_input.set_color(Color::Red);
+                        dt_update_title_input.deactivate();
                         dt_update_description_input.set_value("");
-                        dt_update_description_input.set_color(Color::Red);
+                        dt_update_description_input.deactivate();
                         update_button.deactivate();
                         delete_button.deactivate();
                     }
@@ -337,7 +337,9 @@ async fn main() -> MyResult<()> {
                 update_droptype.hide();
                 add_droptype.hide();
                 dt_update_title_input.set_color(Color::Background);
+                dt_update_title_input.activate();
                 dt_update_description_input.set_color(Color::Background);
+                dt_update_description_input.activate();
                 update_button.activate();
                 delete_button.activate();
                 add_button.set_color(Color::DarkYellow);
