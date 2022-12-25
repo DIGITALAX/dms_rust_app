@@ -289,7 +289,6 @@ impl NewDTButton {
         new_dt_btn.handle(move |b, ev| match ev {
             Event::Enter => {
                 set_cursor(Cursor::Hand);
-                println!("in enter here");
                 redraw();
                 true
             }
@@ -300,7 +299,6 @@ impl NewDTButton {
             }
             Event::Push => {
                 b.emit(tx.clone(), Message::DropTypeNew);
-                println!("in push here");
                 set_cursor(Cursor::Hand);
                 redraw();
                 true

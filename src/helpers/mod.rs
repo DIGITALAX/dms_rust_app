@@ -34,7 +34,6 @@ pub async fn get_collection(
     _title: String,
 ) -> mongodb::error::Result<Vec<DropType>> {
     let mut result: Vec<DropType> = Vec::new();
-    println!("here {}", _title);
     match database {
         Some(db) => {
             let collections = db.collection::<DropType>("droptypes");
@@ -177,11 +176,9 @@ pub async fn delete_collection(
     match database {
         Some(db) => {
             let collections = db.collection::<DropType>("droptypes");
-            println!("title {:?}", _title);
             let collection = collections
                 .find_one_and_delete(doc! {"title": _title.to_lowercase()}, None)
                 .await?;
-            println!("collection {:?}", collection);
             result = "deleted".to_string();
         }
         None => {}

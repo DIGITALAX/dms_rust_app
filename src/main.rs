@@ -16,7 +16,7 @@ use fltk::{
     text::TextDisplay,
     window::Window,
 };
-use helpers::{add_collection, delete_collection, get_collections};
+use helpers::{add_collection, delete_collection, get_collection, get_collections};
 use messages::Message;
 use mongodb::Database;
 use schemas::DropType;
@@ -24,7 +24,7 @@ use widgets::{
     animation::AnimationProgress,
     droptypes::{
         create_droptypes_table, CRUDButton, DropTypeInput, DropTypeInputLabel, DropTypeMultiInput,
-        DropTypeUnder, ReturnButton, NewDTButton
+        DropTypeUnder, NewDTButton, ReturnButton,
     },
     sidebar::MenuButton,
     MainTitle,
@@ -214,7 +214,7 @@ async fn main() -> MyResult<()> {
     update_button.emit(tx.clone(), Message::DropTypeUpdate);
     delete_button.emit(
         tx.clone(),
-        Message::DropTypeDelete(dt_add_title_input.clone()),
+        Message::DropTypeDelete(dt_update_title_input.clone()),
     );
     update_return.emit(tx.clone(), Message::ReturnDropType);
     add_return.emit(tx.clone(), Message::ReturnDropType);
@@ -269,7 +269,8 @@ async fn main() -> MyResult<()> {
                             &droptypes,
                             tx.clone(),
                         );
-                        let new_dt = NewDTButton::new(210, 80, 200, 40, "New Drop Type", tx.clone());
+                        let new_dt =
+                            NewDTButton::new(210, 80, 200, 40, "New Drop Type", tx.clone());
                         droptypes_scroll.add(&*new_dt);
                         droptypes_scroll.show();
                         redraw()
@@ -279,12 +280,18 @@ async fn main() -> MyResult<()> {
             }
             Some(Message::DropTypeModify(frame)) => {
                 droptypes_scroll.hide();
-                // dt_update_title_input.set_value();
-                // dt_update_description_input.set_value();
-                update_droptype.update_child(&mut *dt_update_title_input);
-                update_droptype.update_child(&mut *dt_update_description_input);
-                update_droptype.show();
-                redraw();
+                let db = database.clone();
+                match get_collection(db, frame.label()).await {
+                    Ok(droptype) => {
+                        dt_update_title_input.set_value(&droptype[0].title);
+                        dt_update_description_input.set_value(&droptype[0].description);
+                        update_droptype.update_child(&mut *dt_update_title_input);
+                        update_droptype.update_child(&mut *dt_update_description_input);
+                        update_droptype.show();
+                        redraw();
+                    }
+                    Err(_) => {}
+                }
             }
             Some(Message::DropTypeAdd(title_input, description_input)) => {
                 let new_droptype = DropType {
@@ -298,19 +305,22 @@ async fn main() -> MyResult<()> {
                         add_button.set_label("Success");
                         dt_add_title_input.set_value("");
                         dt_add_description_input.set_value("");
-                        droptypes_scroll.clear();
                     }
                     Err(_) => {}
                 }
             }
-            Some(Message::DropTypeDelete(title)) => {
+            Some(Message::DropTypeDelete(title_input)) => {
                 let db = database.clone();
-                match delete_collection(db, title.value()).await {
+                match delete_collection(db, title_input.value()).await {
                     Ok(_) => {
                         delete_button.set_color(Color::Green);
                         delete_button.set_label("Success");
-                        dt_add_title_input.set_value("");
-                        dt_add_description_input.set_value("");
+                        dt_update_title_input.set_value("");
+                        dt_update_title_input.set_color(Color::Red);
+                        dt_update_description_input.set_value("");
+                        dt_update_description_input.set_color(Color::Red);
+                        update_button.deactivate();
+                        delete_button.deactivate();
                     }
                     Err(_) => {}
                 }
@@ -323,8 +333,13 @@ async fn main() -> MyResult<()> {
             }
             Some(Message::DropTypeUpdate) => {}
             Some(Message::ReturnDropType) => {
+                droptypes_scroll.clear();
                 update_droptype.hide();
                 add_droptype.hide();
+                dt_update_title_input.set_color(Color::Background);
+                dt_update_description_input.set_color(Color::Background);
+                update_button.activate();
+                delete_button.activate();
                 add_button.set_color(Color::DarkYellow);
                 add_button.set_label("Add Drop Type");
                 delete_button.set_color(Color::DarkYellow);
@@ -345,7 +360,8 @@ async fn main() -> MyResult<()> {
                             &droptypes,
                             tx.clone(),
                         );
-                        let new_dt = NewDTButton::new(210, 80, 200, 40, "New Drop Type", tx.clone());
+                        let new_dt =
+                            NewDTButton::new(210, 80, 200, 40, "New Drop Type", tx.clone());
                         droptypes_scroll.add(&*new_dt);
                         redraw()
                     }
