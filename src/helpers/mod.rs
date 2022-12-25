@@ -144,18 +144,18 @@ pub async fn add_product(
 
 pub async fn add_collection(
     database: Option<Database>,
-    _collection: DropType,
+    collection: DropType,
 ) -> mongodb::error::Result<Vec<DropType>> {
     let mut result = Vec::new();
-    let mut id = String::new();
+    let _id;
     match database {
         Some(db) => {
             let collections = db.collection::<DropType>("droptypes");
-            let collection = collections.insert_one(_collection, None).await?;
+            let collection = collections.insert_one(collection, None).await?;
             let a = collection.inserted_id;
             match a {
                 Bson::ObjectId(s) => {
-                    id = s.to_hex();
+                    _id = s.to_hex();
                 }
                 _ => {}
             }

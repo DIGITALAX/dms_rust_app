@@ -36,7 +36,7 @@ const BAR_SPEED: f64 = 0.00018;
 #[tokio::main]
 async fn main() -> MyResult<()> {
     let (tx, rx) = channel::<Message>();
-    let database: Option<Database> = None;
+    let mut database: Option<Database> = None;
     let app = App::default();
     set_font(Font::Screen);
     set_background_color(23, 24, 33);
@@ -225,6 +225,7 @@ async fn main() -> MyResult<()> {
             Some(Message::Start) => {
                 start_animation(&mut animation, &mut anim_bar);
                 let db = connect().await?;
+                database = Some(db.clone());
                 tx.send(Message::Ready(Some(db)))
             }
             Some(Message::Ready(db)) => {
@@ -284,16 +285,16 @@ async fn main() -> MyResult<()> {
             }
             Some(Message::DropTypeAdd(title_input, description_input)) => {
                 let new_droptype = DropType {
-                    title: title_input.value(),
-                    description: description_input.value(),
+                    title: title_input.value().trim().to_string(),
+                    description: description_input.value().trim().to_string(),
                 };
                 let db = database.clone();
                 match add_collection(db, new_droptype).await {
                     Ok(collection) => {
                         add_button.set_color(Color::Green);
                         add_button.set_label("Success");
-                        // dt_add_title_input.set_value("");
-                        // dt_add_description_input.set_value("");
+                        dt_add_title_input.set_value("");
+                        dt_add_description_input.set_value("");
                     }
                     Err(_) => {}
                 }
@@ -304,8 +305,8 @@ async fn main() -> MyResult<()> {
                     Ok(_) => {
                         delete_button.set_color(Color::Green);
                         delete_button.set_label("Success");
-                        // dt_add_title_input.set_value("");
-                        // dt_add_description_input.set_value("");
+                        dt_add_title_input.set_value("");
+                        dt_add_description_input.set_value("");
                     }
                     Err(_) => {}
                 }
