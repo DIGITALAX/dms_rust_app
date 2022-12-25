@@ -1,29 +1,29 @@
-use crate::schemas::DropType;
+use crate::{schemas::DropType, messages::Message};
 use fltk::{
-    app::redraw,
+    app::{redraw, Sender},
     draw::set_cursor,
     enums::{Align, Color, Cursor, Event, FrameType},
-    frame::Frame,
+    button::Button,
     group::Scroll,
     prelude::*,
     widget_extends,
 };
 use num_integer::div_ceil;
-widget_extends!(DropTypeFrame, Frame, dt_frame);
-#[derive(Clone)]
+widget_extends!(DropTypeFrame, Button, dt_frame);
+#[derive(Clone, Debug)]
 pub struct DropTypeFrame {
-    dt_frame: Frame,
+    pub dt_frame: Button,
 }
 
 impl DropTypeFrame {
-    pub fn new(x: i32, y: i32, w: i32, h: i32, title: &str) -> Self {
-        let mut label = String::new();
+    pub fn new(x: i32, y: i32, w: i32, h: i32, title: &str, tx: Sender<Message>) -> Self {
+        let label;
         if title.len() > 30 {
             label = title[0..=30].to_string() + "...";
         } else {
             label = title.to_string();
         }
-        let mut dt_frame = Frame::new(x, y, w, h, None).with_label(&label);
+        let mut dt_frame = Button::new(x, y, w, h, None).with_label(&label);
         dt_frame.clear_visible_focus();
         dt_frame.set_frame(FrameType::FlatBox);
         dt_frame.set_color(Color::DarkYellow);
@@ -44,6 +44,7 @@ impl DropTypeFrame {
                 true
             }
             Event::Push => {
+                b.emit(tx.clone(), Message::DropTypeModify(b.clone()));
                 set_cursor(Cursor::Hand);
                 redraw();
                 true
@@ -54,7 +55,6 @@ impl DropTypeFrame {
             }
             _ => false,
         });
-
         Self { dt_frame }
     }
 
@@ -71,17 +71,19 @@ pub fn create_droptypes_table(
     mut x_pos: i32,
     mut y_pos: i32,
     droptypes: &Vec<DropType>,
+    tx: Sender<Message>
 ) {
     let mut title_incramentor = 0;
     for _row in 0..div_ceil(droptypes_len, number_of_cols) as i32 {
         for _col in 0..number_of_cols {
             if title_incramentor < droptypes_len {
-                let mut result = DropTypeFrame::new(
+                let result = DropTypeFrame::new(
                     x_pos,
                     y_pos,
                     drop_frame_width,
                     drop_frame_height,
                     &droptypes[title_incramentor as usize].title,
+                    tx.clone()
                 );
                 droptypes_scroll.add(&*result);
                 x_pos += col_width;

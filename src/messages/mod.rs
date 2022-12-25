@@ -1,13 +1,13 @@
-use fltk::frame::Frame;
 use mongodb::Database;
-use crate::widgets::{sidebar::MenuButton, droptypes::DropTypeFrame};
+use fltk::button::Button;
+use crate::widgets::sidebar::MenuButton;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Message {
     Start,
     MenuSelect(MenuButton, MenuButton, MenuButton, MenuButton, MenuButton, Option<Database>),
     DropTypes(Option<Database>),
     Ready(Option<Database>),
-    DropTypeModify(DropTypeFrame),
+    DropTypeModify(Button),
     Error,
 }

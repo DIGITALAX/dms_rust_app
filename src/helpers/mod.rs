@@ -1,18 +1,4 @@
 use crate::schemas::{DropType, Product, User};
-use fltk::{
-    app::{redraw, set_background2_color, set_background_color, set_color, set_font, App},
-    button::{Button, CheckButton},
-    draw::set_cursor,
-    enums::{Align, Color, Cursor, Event, Font, FrameType},
-    frame::Frame,
-    group::{Scroll, ScrollType},
-    input::{Input, MultilineInput},
-    prelude::*,
-    table,
-    table::{Table, TableContext},
-    text::{TextBuffer, TextDisplay},
-    window::Window,
-};
 use futures::stream::TryStreamExt;
 use mongodb::{
     bson::{doc, Bson},

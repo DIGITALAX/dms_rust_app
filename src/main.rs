@@ -11,7 +11,7 @@ use error::MyError;
 use fltk::{
     app::{channel, redraw, set_background_color, set_color, set_font, App},
     enums::{Color, Event, Font},
-    group::{Scroll, ScrollType},
+    group::{Scroll, ScrollType, Group},
     prelude::*,
     window::Window,
 };
@@ -19,10 +19,7 @@ use helpers::get_collections;
 use messages::Message;
 use mongodb::Database;
 use widgets::{
-    animation::AnimationProgress,
-    droptypes::{create_droptypes_table, DropTypeFrame},
-    sidebar::MenuButton,
-    MainTitle,
+    animation::AnimationProgress, droptypes::create_droptypes_table, sidebar::MenuButton, MainTitle,
 };
 
 type MyResult<T> = Result<T, MyError>;
@@ -40,16 +37,16 @@ async fn main() -> MyResult<()> {
     set_color(Color::DarkYellow, 201, 216, 228);
     let mut app_window = Window::default()
         .with_size(1350, 900)
-        .with_label("Drop Management System");
-    let mut main_text = MainTitle::new(675, 400, 0, 0, "Drop Management System", 20);
+        .with_label("Drop Merchant Supply");
+    let mut main_text = MainTitle::new(675, 400, 0, 0, "Drop Merchant Supply", 20);
     let mut anim_bar = AnimationProgress::new();
     let mut animation = false;
 
     // sidebar window
     let mut sidebar_window = Window::new(0, 100, 120, 900, None);
     sidebar_window.begin();
-    let mut drafts_button = MenuButton::new(40, 100, 60, 60, "Drafts", true);
-    let mut drop_button = MenuButton::new(40, 200, 60, 60, "Drop Types", false);
+    let mut drafts_button = MenuButton::new(40, 100, 60, 60, "Drafts", false);
+    let mut drop_button = MenuButton::new(40, 200, 60, 60, "Drop Types", true);
     let mut product_button = MenuButton::new(40, 300, 60, 60, "Products", false);
     let mut pricing_button = MenuButton::new(40, 400, 60, 60, "Pricing", false);
     let mut admin_button = MenuButton::new(40, 500, 60, 60, "Admin", false);
@@ -66,8 +63,11 @@ async fn main() -> MyResult<()> {
     let col_width = 260;
     let drop_frame_height = 180;
     let drop_frame_width = 240;
-    let mut droptypes_vec: Vec<DropTypeFrame> = Vec::new();
     droptypes_scroll.end();
+
+    let add_droptype = Group::new(200, 130, 1050, 750, None);
+    add_droptype.begin();
+    add_droptype.end();
 
     // hide all widgets for starting animation
     sidebar_window.hide();
@@ -196,7 +196,6 @@ async fn main() -> MyResult<()> {
                 } else {
                     droptypes_scroll.hide();
                 }
-                redraw();
             }
             Some(Message::DropTypes(db)) => {
                 droptypes_scroll.show();
@@ -213,20 +212,19 @@ async fn main() -> MyResult<()> {
                             x_pos,
                             y_pos,
                             &droptypes,
+                            tx.clone(),
                         );
-                        redraw();
+                        redraw()
                     }
                     Err(_) => {}
                 }
             }
             Some(Message::DropTypeModify(frame)) => {
                 println!("in modify");
-                // droptypes_scroll.hide();
-                // redraw();
+                droptypes_scroll.hide();
+                redraw();
             }
-            Some(Message::Error) => {
-                println!("error")
-            }
+            Some(Message::Error) => {}
             None => {
                 if animation {
                     let mut val = anim_bar.value();

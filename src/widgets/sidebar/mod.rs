@@ -10,7 +10,7 @@ use fltk::{
 
 widget_extends!(MenuButton, Button, mbtn);
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct MenuButton {
    pub mbtn: Button,
 }
