@@ -1,4 +1,5 @@
-use crate::{messages::Message, schemas::DropType};
+use crate::{messages::Message, schemas::{DropType, Product}};
+use crate::widgets::products::ProductFrame;
 use fltk::{
     app::{redraw, Sender},
     button::Button,
@@ -309,5 +310,48 @@ impl NewDTButton {
             _ => false,
         });
         Self { new_dt_btn }
+    }
+}
+
+pub fn create_prod_coll_table(
+    prod_coll_scroll: &mut Scroll,
+    number_of_cols: i32,
+    products_len: i32,
+    frame_height: i32,
+    frame_width: i32,
+    row_height: i32,
+    col_width: i32,
+    mut x_pos: i32,
+    mut y_pos: i32,
+    products: &Vec<Product>,
+    tx: Sender<Message>,
+) {
+    let mut title_incramentor = 0;
+    let row_count;
+    if div_rem(products_len, number_of_cols).1 == 0 {
+        row_count = div_ceil(products_len, number_of_cols) + 2
+    } else {
+        row_count = div_ceil(products_len, number_of_cols) + 1
+    }
+    for _row in 0..row_count as i32 {
+        for _col in 0..number_of_cols {
+            if title_incramentor < products_len {
+                let result = ProductFrame::new(
+                    x_pos,
+                    y_pos,
+                    frame_width,
+                    frame_height,
+                    &products[title_incramentor as usize].name,
+                    tx.clone(),
+                );
+                prod_coll_scroll.add(&*result);
+                x_pos += col_width;
+                title_incramentor += 1;
+            } else {
+                break;
+            }
+        }
+        x_pos = 720;
+        y_pos += row_height;
     }
 }

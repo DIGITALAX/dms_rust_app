@@ -19,10 +19,12 @@ pub enum Message {
     DropTypes(Option<Database>),
     Ready(Option<Database>),
     DropTypeModify(Button),
+    ProductModify(Button),
     DropTypeAdd(DropTypeInput, DropTypeMultiInput),
     DropTypeDelete(DropTypeInput),
     DropTypeUpdate,
     ReturnDropType,
     DropTypeNew,
+    DropProducts(Option<Database>, String),
     Error,
 }

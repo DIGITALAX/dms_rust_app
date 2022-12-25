@@ -27,7 +27,7 @@ impl MenuButton {
         } else {
             mbtn.set_color(Color::DarkYellow);
         }
-        mbtn.handle(move |b, ev| match ev {
+        mbtn.handle(move |_b, ev| match ev {
             Event::Enter => {
                 set_cursor(Cursor::Hand);
                 redraw();

@@ -7,6 +7,7 @@ use fltk::{
 pub mod droptypes;
 pub mod sidebar;
 pub mod animation;
+pub mod products;
 
 widget_extends!(MainTitle, TextDisplay, mn_title);
 

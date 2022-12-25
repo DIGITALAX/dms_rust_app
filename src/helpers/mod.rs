@@ -68,9 +68,7 @@ pub async fn get_user(
     Ok(result)
 }
 
-pub async fn get_products(
-    database: Option<Database>,
-) -> mongodb::error::Result<Vec<Product>> {
+pub async fn get_products(database: Option<Database>) -> mongodb::error::Result<Vec<Product>> {
     let mut result: Vec<Product> = Vec::new();
     match database {
         Some(db) => {
@@ -86,9 +84,7 @@ pub async fn get_products(
     Ok(result)
 }
 
-pub async fn get_collections(
-    database: Option<Database>,
-) -> mongodb::error::Result<Vec<DropType>> {
+pub async fn get_collections(database: Option<Database>) -> mongodb::error::Result<Vec<DropType>> {
     let mut result: Vec<DropType> = Vec::new();
     match database {
         Some(db) => {
@@ -176,12 +172,33 @@ pub async fn delete_collection(
     match database {
         Some(db) => {
             let collections = db.collection::<DropType>("droptypes");
-            let collection = collections
+            let _collection = collections
                 .find_one_and_delete(doc! {"title": _title.to_lowercase()}, None)
                 .await?;
             result = "deleted".to_string();
         }
         None => {}
     }
+    Ok(result)
+}
+
+pub async fn get_coll_products(
+    database: Option<Database>,
+    _collection: String,
+) -> mongodb::error::Result<Vec<Product>> {
+    let mut result: Vec<Product> = Vec::new();
+    match database {
+        Some(db) => {
+            let products = db.collection::<Product>("products");
+            // let find_opt = FindOptions::builder().sort(doc! { "collection": 1i32 }).build();
+            let mut cursor = products.find(doc! {"collection": _collection}, None).await?;
+            
+            while let Some(product) = cursor.try_next().await? {
+                result.push(product);
+            }
+        }
+        None => {}
+    }
+   
     Ok(result)
 }

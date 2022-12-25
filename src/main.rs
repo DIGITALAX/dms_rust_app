@@ -18,15 +18,17 @@ use fltk::{
     text::TextDisplay,
     window::Window,
 };
-use helpers::{add_collection, delete_collection, get_collection, get_collections};
+use helpers::{
+    add_collection, delete_collection, get_coll_products, get_collection, get_collections,
+};
 use messages::Message;
 use mongodb::Database;
 use schemas::DropType;
 use widgets::{
     animation::AnimationProgress,
     droptypes::{
-        create_droptypes_table, CRUDButton, DropTypeInput, DropTypeInputLabel, DropTypeMultiInput,
-        DropTypeUnder, NewDTButton, ReturnButton,
+        create_droptypes_table, create_prod_coll_table, CRUDButton, DropTypeInput,
+        DropTypeInputLabel, DropTypeMultiInput, DropTypeUnder, NewDTButton, ReturnButton,
     },
     sidebar::MenuButton,
     MainTitle,
@@ -49,7 +51,7 @@ async fn main() -> MyResult<()> {
         .with_size(1350, 900)
         .with_label("Drop Merchant Supply");
     let mut main_text = MainTitle::new(675, 400, 0, 0, "Drop Merchant Supply", 20);
-    let mut fv_frame = Frame::new(35,25,30,30, None);
+    let mut fv_frame = Frame::new(35, 25, 30, 30, None);
     fv_frame.set_frame(FrameType::FlatBox);
     fv_frame.set_color(Color::Background);
     let mut fv_img = PngImage::load("src/dms.png").unwrap();
@@ -100,7 +102,7 @@ async fn main() -> MyResult<()> {
     add_droptype.end();
 
     // update
-    let mut update_droptype = Group::new(200, 130, 1050, 750, None);
+    let mut update_droptype = Group::new(200, 130, 600, 750, None);
     update_droptype.begin();
     let mut update_return = ReturnButton::new(200, 160, 40, 20, "Return");
     let mut dt_update_title =
@@ -117,12 +119,18 @@ async fn main() -> MyResult<()> {
     let mut delete_button = CRUDButton::new(415, 770, 175, 40, "Delete");
     update_droptype.end();
 
+    let mut product_collection_scroll = Scroll::new(680, 130, 550, 750, None);
+    product_collection_scroll.begin();
+    product_collection_scroll.set_type(ScrollType::Vertical);
+    product_collection_scroll.end();
+
     // hide all widgets for starting animation
     sidebar_window.hide();
     droptypes_scroll.hide();
     add_droptype.hide();
     update_droptype.hide();
     fv_frame.hide();
+    product_collection_scroll.hide();
 
     app_window.make_resizable(true);
     app_window.end();
@@ -260,11 +268,15 @@ async fn main() -> MyResult<()> {
                     tx.send(Message::DropTypes(db));
                 } else {
                     droptypes_scroll.hide();
+                    product_collection_scroll.hide();
+                    add_droptype.hide();
+                    update_droptype.hide();
                 }
             }
             Some(Message::DropTypes(db)) => {
                 add_droptype.hide();
                 update_droptype.hide();
+                product_collection_scroll.hide();
                 match get_collections(db).await {
                     Ok(droptypes) => {
                         create_droptypes_table(
@@ -284,7 +296,6 @@ async fn main() -> MyResult<()> {
                             NewDTButton::new(245, 80, 150, 40, "New Drop Type", tx.clone());
                         droptypes_scroll.add(&*new_dt);
                         droptypes_scroll.show();
-                        redraw()
                     }
                     Err(_) => {}
                 }
@@ -292,6 +303,7 @@ async fn main() -> MyResult<()> {
             Some(Message::DropTypeModify(frame)) => {
                 droptypes_scroll.hide();
                 let db = database.clone();
+                let db_mv = database.clone();
                 match get_collection(db, frame.label()).await {
                     Ok(droptype) => {
                         dt_update_title_input.set_value(&droptype[0].title);
@@ -300,10 +312,36 @@ async fn main() -> MyResult<()> {
                         update_droptype.update_child(&mut *dt_update_description_input);
                         update_droptype.show();
                         redraw();
+                        tx.send(Message::DropProducts(db_mv, droptype[0].title.clone()))
                     }
                     Err(_) => {}
                 }
             }
+            Some(Message::DropProducts(db, title)) => match get_coll_products(db, title).await {
+                Ok(products) => {
+                    product_collection_scroll.clear();
+                    create_prod_coll_table(
+                        &mut product_collection_scroll,
+                        2,
+                        products.len() as i32,
+                        drop_frame_height,
+                        drop_frame_width,
+                        row_height,
+                        col_width,
+                        720,
+                        240,
+                        &products,
+                        tx.clone(),
+                    );
+                    let mut p_c_title = TextDisplay::new(850, 230, 0, 0, None)
+                        .with_label(&"Drop Type Products".to_uppercase());
+                    p_c_title.set_label_color(Color::White);
+                    p_c_title.set_label_size(25);product_collection_scroll.add(&p_c_title);
+                    product_collection_scroll.show();
+                    redraw();
+                }
+                Err(_) => {}
+            },
             Some(Message::DropTypeAdd(title_input, description_input)) => {
                 let new_droptype = DropType {
                     title: title_input.value().trim().to_string(),
@@ -338,6 +376,7 @@ async fn main() -> MyResult<()> {
             }
             Some(Message::DropTypeNew) => {
                 update_droptype.hide();
+                product_collection_scroll.hide();
                 droptypes_scroll.hide();
                 add_droptype.show();
                 redraw();
@@ -345,6 +384,7 @@ async fn main() -> MyResult<()> {
             Some(Message::DropTypeUpdate) => {}
             Some(Message::ReturnDropType) => {
                 droptypes_scroll.clear();
+                product_collection_scroll.hide();
                 update_droptype.hide();
                 add_droptype.hide();
                 dt_update_title_input.set_color(Color::Background);
@@ -383,7 +423,12 @@ async fn main() -> MyResult<()> {
                 droptypes_scroll.show();
                 redraw();
             }
-            Some(Message::Error) => {}
+            Some(Message::ProductModify(_frame)) => {
+                //todo()!
+            }
+            Some(Message::Error) => {
+                //todo()!
+            }
             None => {
                 if animation {
                     let mut val = anim_bar.value();
