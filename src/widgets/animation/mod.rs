@@ -15,7 +15,7 @@ pub struct AnimationProgress {
 
 impl AnimationProgress {
     pub fn new() -> Self {
-        let mut anim_prg = Progress::new(300, 425, 600, 50, None);
+        let mut anim_prg = Progress::new(375, 425, 600, 50, None);
         anim_prg.set_label_color(Color::White);
         anim_prg.set_align(Align::Top);
         anim_prg.set_label_size(15);

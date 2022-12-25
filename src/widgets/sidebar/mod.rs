@@ -12,7 +12,7 @@ widget_extends!(MenuButton, Button, mbtn);
 
 #[derive(Clone)]
 pub struct MenuButton {
-    mbtn: Button,
+   pub mbtn: Button,
 }
 
 impl MenuButton {
@@ -21,14 +21,11 @@ impl MenuButton {
         mbtn.set_frame(FrameType::RoundedBox);
         mbtn.set_selection_color(Color::Cyan);
         mbtn.clear_visible_focus();
-        mbtn.set_label(label);
-        mbtn.set_label_size(0);
+        mbtn.set_tooltip(label);
         if first_select {
             mbtn.set_color(Color::Cyan);
-            mbtn.set_label_color(Color::Cyan);
         } else {
             mbtn.set_color(Color::DarkYellow);
-            mbtn.set_label_color(Color::DarkYellow);
         }
         mbtn.handle(move |b, ev| match ev {
             Event::Enter => {

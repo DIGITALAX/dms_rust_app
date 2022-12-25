@@ -1,6 +1,6 @@
-use crate::{messages::Message, schemas::DropType};
+use crate::schemas::DropType;
 use fltk::{
-    app::{redraw, Sender},
+    app::redraw,
     draw::set_cursor,
     enums::{Align, Color, Cursor, Event, FrameType},
     frame::Frame,
@@ -46,7 +46,6 @@ impl DropTypeFrame {
             Event::Push => {
                 set_cursor(Cursor::Hand);
                 redraw();
- 
                 true
             }
             Event::Focus => {
@@ -55,8 +54,10 @@ impl DropTypeFrame {
             }
             _ => false,
         });
+
         Self { dt_frame }
     }
+
 }
 
 pub fn create_droptypes_table(
@@ -70,13 +71,12 @@ pub fn create_droptypes_table(
     mut x_pos: i32,
     mut y_pos: i32,
     droptypes: &Vec<DropType>,
-    droptypes_vector: &mut Vec<DropTypeFrame>
 ) {
     let mut title_incramentor = 0;
     for _row in 0..div_ceil(droptypes_len, number_of_cols) as i32 {
         for _col in 0..number_of_cols {
             if title_incramentor < droptypes_len {
-                let result = DropTypeFrame::new(
+                let mut result = DropTypeFrame::new(
                     x_pos,
                     y_pos,
                     drop_frame_width,
@@ -84,14 +84,13 @@ pub fn create_droptypes_table(
                     &droptypes[title_incramentor as usize].title,
                 );
                 droptypes_scroll.add(&*result);
-                droptypes_vector.push(result);
                 x_pos += col_width;
                 title_incramentor += 1;
             } else {
                 break;
             }
         }
-        x_pos = 130;
+        x_pos = 200;
         y_pos += row_height;
     }
 }

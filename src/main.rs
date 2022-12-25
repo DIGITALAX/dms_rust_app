@@ -34,14 +34,14 @@ async fn main() -> MyResult<()> {
     let database: Option<Database> = None;
     let app = App::default();
     set_font(Font::Screen);
-    set_background_color(17, 19, 19);
+    set_background_color(23, 24, 33);
     set_color(Color::White, 231, 242, 251);
     set_color(Color::Cyan, 187, 238, 255);
     set_color(Color::DarkYellow, 201, 216, 228);
     let mut app_window = Window::default()
-        .with_size(1200, 900)
+        .with_size(1350, 900)
         .with_label("Drop Management System");
-    let mut main_text = MainTitle::new(600, 400, 0, 0, "Drop Management System", 20);
+    let mut main_text = MainTitle::new(675, 400, 0, 0, "Drop Management System", 20);
     let mut anim_bar = AnimationProgress::new();
     let mut animation = false;
 
@@ -56,17 +56,17 @@ async fn main() -> MyResult<()> {
     sidebar_window.end();
 
     // drop types window
-    let mut droptypes_scroll = Scroll::new(130, 130, 1050, 750, None);
+    let mut droptypes_scroll = Scroll::new(200, 130, 1050, 750, None);
     droptypes_scroll.set_type(ScrollType::Vertical);
     droptypes_scroll.begin();
     let number_of_cols = 4;
-    let x_pos = 130;
+    let x_pos = 200;
     let y_pos = 0;
     let row_height = 200;
     let col_width = 260;
     let drop_frame_height = 180;
     let drop_frame_width = 240;
-    let mut droptypes_vector: Vec<DropTypeFrame> = Vec::new();
+    let mut droptypes_vec: Vec<DropTypeFrame> = Vec::new();
     droptypes_scroll.end();
 
     // hide all widgets for starting animation
@@ -184,19 +184,14 @@ async fn main() -> MyResult<()> {
                 tx.send(Message::DropTypes(db));
             }
             Some(Message::MenuSelect(mut b, mut b1, mut b2, mut b3, mut b4, db)) => {
-                if b.color() == Color::White {
+                if b.color() == Color::DarkYellow {
                     b.set_color(Color::Cyan);
-                    b.set_label_color(Color::Cyan);
-                    b1.set_color(Color::White);
-                    b1.set_label_color(Color::White);
-                    b2.set_color(Color::White);
-                    b2.set_label_color(Color::White);
-                    b3.set_color(Color::White);
-                    b3.set_label_color(Color::White);
-                    b4.set_color(Color::White);
-                    b4.set_label_color(Color::White);
+                    b1.set_color(Color::DarkYellow);
+                    b2.set_color(Color::DarkYellow);
+                    b3.set_color(Color::DarkYellow);
+                    b4.set_color(Color::DarkYellow);
                 }
-                if b.label() == "Drop Types" {
+                if b.tooltip() == Some("Drop Types".to_string()) {
                     tx.send(Message::DropTypes(db));
                 } else {
                     droptypes_scroll.hide();
@@ -218,20 +213,19 @@ async fn main() -> MyResult<()> {
                             x_pos,
                             y_pos,
                             &droptypes,
-                            &mut droptypes_vector,
                         );
-                        droptypes_scroll.redraw();
+                        redraw();
                     }
                     Err(_) => {}
                 }
             }
             Some(Message::DropTypeModify(frame)) => {
-                println!("here");
-                droptypes_scroll.hide();
-                redraw();
+                println!("in modify");
+                // droptypes_scroll.hide();
+                // redraw();
             }
             Some(Message::Error) => {
-                // todo!()
+                println!("error")
             }
             None => {
                 if animation {
