@@ -85,26 +85,46 @@ pub fn create_droptypes_table(
     tx: Sender<Message>,
 ) {
     let mut title_incramentor = 0;
-    for _row in 0..div_ceil(droptypes_len, number_of_cols) as i32 {
-        for _col in 0..number_of_cols {
-            if title_incramentor < droptypes_len {
-                let result = DropTypeFrame::new(
-                    x_pos,
-                    y_pos,
-                    drop_frame_width,
-                    drop_frame_height,
-                    &droptypes[title_incramentor as usize].title,
-                    tx.clone(),
-                );
-                droptypes_scroll.add(&*result);
-                x_pos += col_width;
-                title_incramentor += 1;
-            } else {
-                break;
+    for row in 0..div_ceil(droptypes_len, number_of_cols) as i32 {
+        if row == 0 {
+            for _col in 0..number_of_cols-1 {
+                if title_incramentor < droptypes_len {
+                    let result = DropTypeFrame::new(
+                        x_pos,
+                        y_pos,
+                        drop_frame_width,
+                        drop_frame_height,
+                        &droptypes[title_incramentor as usize].title,
+                        tx.clone(),
+                    );
+                    droptypes_scroll.add(&*result);
+                    x_pos += col_width;
+                    title_incramentor += 1;
+                }
             }
+            x_pos = 200;
+            y_pos += row_height;
+        } else {
+            for _col in 0..number_of_cols {
+                if title_incramentor < droptypes_len {
+                    let result = DropTypeFrame::new(
+                        x_pos,
+                        y_pos,
+                        drop_frame_width,
+                        drop_frame_height,
+                        &droptypes[title_incramentor as usize].title,
+                        tx.clone(),
+                    );
+                    droptypes_scroll.add(&*result);
+                    x_pos += col_width;
+                    title_incramentor += 1;
+                } else {
+                    break;
+                }
+            }
+            x_pos = 200;
+            y_pos += row_height;
         }
-        x_pos = 200;
-        y_pos += row_height;
     }
 }
 
