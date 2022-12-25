@@ -16,7 +16,7 @@ use fltk::{
     text::TextDisplay,
     window::Window,
 };
-use helpers::{add_collection, get_collections, delete_collection};
+use helpers::{add_collection, delete_collection, get_collections};
 use messages::Message;
 use mongodb::Database;
 use schemas::DropType;
@@ -24,7 +24,7 @@ use widgets::{
     animation::AnimationProgress,
     droptypes::{
         create_droptypes_table, CRUDButton, DropTypeInput, DropTypeInputLabel, DropTypeMultiInput,
-        DropTypeUnder, ReturnButton,
+        DropTypeUnder, ReturnButton, NewDTButton
     },
     sidebar::MenuButton,
     MainTitle,
@@ -71,7 +71,6 @@ async fn main() -> MyResult<()> {
     let x_pos = 200 + col_width;
     let drop_frame_height = 180;
     let drop_frame_width = 240;
-    let mut new_dt = CRUDButton::new(210, 80, 200, 40, "New Drop Type");
     droptypes_scroll.end();
 
     // add
@@ -106,7 +105,7 @@ async fn main() -> MyResult<()> {
     let _dt_update_label = DropTypeInputLabel::new(240, 416, "Drop Type Description");
     let mut dt_update_description_input = DropTypeMultiInput::new(240, 426, 350, 300, None);
     let mut update_button = CRUDButton::new(240, 770, 170, 40, "Update");
-    let mut delete_button = CRUDButton::new(415, 770, 175,40, "Delete");
+    let mut delete_button = CRUDButton::new(415, 770, 175, 40, "Delete");
     update_droptype.end();
 
     // hide all widgets for starting animation
@@ -213,10 +212,12 @@ async fn main() -> MyResult<()> {
         Message::DropTypeAdd(dt_add_title_input.clone(), dt_add_description_input.clone()),
     );
     update_button.emit(tx.clone(), Message::DropTypeUpdate);
-    delete_button.emit(tx.clone(), Message::DropTypeDelete(dt_add_title_input.clone()));
+    delete_button.emit(
+        tx.clone(),
+        Message::DropTypeDelete(dt_add_title_input.clone()),
+    );
     update_return.emit(tx.clone(), Message::ReturnDropType);
     add_return.emit(tx.clone(), Message::ReturnDropType);
-    new_dt.emit(tx.clone(), Message::DropTypeNew);
 
     tx.send(Message::Start);
 
@@ -251,7 +252,6 @@ async fn main() -> MyResult<()> {
                 }
             }
             Some(Message::DropTypes(db)) => {
-                droptypes_scroll.show();
                 add_droptype.hide();
                 update_droptype.hide();
                 match get_collections(db).await {
@@ -269,6 +269,9 @@ async fn main() -> MyResult<()> {
                             &droptypes,
                             tx.clone(),
                         );
+                        let new_dt = NewDTButton::new(210, 80, 200, 40, "New Drop Type", tx.clone());
+                        droptypes_scroll.add(&*new_dt);
+                        droptypes_scroll.show();
                         redraw()
                     }
                     Err(_) => {}
@@ -290,11 +293,12 @@ async fn main() -> MyResult<()> {
                 };
                 let db = database.clone();
                 match add_collection(db, new_droptype).await {
-                    Ok(collection) => {
+                    Ok(_) => {
                         add_button.set_color(Color::Green);
                         add_button.set_label("Success");
                         dt_add_title_input.set_value("");
                         dt_add_description_input.set_value("");
+                        droptypes_scroll.clear();
                     }
                     Err(_) => {}
                 }
@@ -325,6 +329,28 @@ async fn main() -> MyResult<()> {
                 add_button.set_label("Add Drop Type");
                 delete_button.set_color(Color::DarkYellow);
                 delete_button.set_label("Delete");
+                let db = database.clone();
+                match get_collections(db).await {
+                    Ok(droptypes) => {
+                        create_droptypes_table(
+                            &mut droptypes_scroll,
+                            number_of_cols,
+                            droptypes.len() as i32,
+                            drop_frame_height,
+                            drop_frame_width,
+                            row_height,
+                            col_width,
+                            x_pos,
+                            y_pos,
+                            &droptypes,
+                            tx.clone(),
+                        );
+                        let new_dt = NewDTButton::new(210, 80, 200, 40, "New Drop Type", tx.clone());
+                        droptypes_scroll.add(&*new_dt);
+                        redraw()
+                    }
+                    Err(_) => {}
+                }
                 droptypes_scroll.show();
                 redraw();
             }

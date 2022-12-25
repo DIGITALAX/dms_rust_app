@@ -11,13 +11,14 @@ use fltk::{
     text::TextDisplay,
     widget_extends,
 };
-use num_integer::div_ceil;
+use num_integer::{div_ceil, div_rem};
 widget_extends!(DropTypeFrame, Button, dt_frame);
 widget_extends!(DropTypeInput, Input, dt_input);
 widget_extends!(DropTypeMultiInput, MultilineInput, dt_ml_input);
 widget_extends!(DropTypeInputLabel, TextDisplay, dt_in_lb);
 widget_extends!(DropTypeUnder, Frame, dt_und);
 widget_extends!(CRUDButton, Button, crd_btn);
+widget_extends!(NewDTButton, Button, new_dt_btn);
 widget_extends!(ReturnButton, Button, r_btn);
 
 #[derive(Clone, Debug)]
@@ -85,9 +86,15 @@ pub fn create_droptypes_table(
     tx: Sender<Message>,
 ) {
     let mut title_incramentor = 0;
-    for row in 0..div_ceil(droptypes_len, number_of_cols) as i32 {
+    let row_count;
+    if div_rem(droptypes_len, number_of_cols).1 == 0 {
+        row_count = div_ceil(droptypes_len, number_of_cols) + 1
+    } else {
+        row_count = div_ceil(droptypes_len, number_of_cols)
+    }
+    for row in 0..row_count + 1 as i32 {
         if row == 0 {
-            for _col in 0..number_of_cols-1 {
+            for _col in 0..number_of_cols - 1 {
                 if title_incramentor < droptypes_len {
                     let result = DropTypeFrame::new(
                         x_pos,
@@ -263,5 +270,43 @@ impl ReturnButton {
             _ => false,
         });
         Self { r_btn }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct NewDTButton {
+    new_dt_btn: Button,
+}
+
+impl NewDTButton {
+    pub fn new(x: i32, y: i32, w: i32, h: i32, label: &str, tx: Sender<Message>) -> Self {
+        let mut new_dt_btn = Button::new(x, y, w, h, None).with_label(&label.to_uppercase());
+        new_dt_btn.clear_visible_focus();
+        new_dt_btn.set_frame(FrameType::FlatBox);
+        new_dt_btn.set_color(Color::DarkYellow);
+        new_dt_btn.set_selection_color(Color::Cyan);
+        new_dt_btn.set_label_color(Color::Black);
+        new_dt_btn.handle(move |b, ev| match ev {
+            Event::Enter => {
+                set_cursor(Cursor::Hand);
+                println!("in enter here");
+                redraw();
+                true
+            }
+            Event::Leave => {
+                set_cursor(Cursor::Default);
+                redraw();
+                true
+            }
+            Event::Push => {
+                b.emit(tx.clone(), Message::DropTypeNew);
+                println!("in push here");
+                set_cursor(Cursor::Hand);
+                redraw();
+                true
+            }
+            _ => false,
+        });
+        Self { new_dt_btn }
     }
 }
