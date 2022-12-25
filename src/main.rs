@@ -10,8 +10,10 @@ use database::connect;
 use error::MyError;
 use fltk::{
     app::{channel, redraw, set_background_color, set_color, set_font, App},
-    enums::{Color, Event, Font},
+    enums::{Color, Event, Font, FrameType},
+    frame::Frame,
     group::{Group, Scroll, ScrollType},
+    image::PngImage,
     prelude::*,
     text::TextDisplay,
     window::Window,
@@ -47,6 +49,12 @@ async fn main() -> MyResult<()> {
         .with_size(1350, 900)
         .with_label("Drop Merchant Supply");
     let mut main_text = MainTitle::new(675, 400, 0, 0, "Drop Merchant Supply", 20);
+    let mut fv_frame = Frame::new(35,25,30,30, None);
+    fv_frame.set_frame(FrameType::FlatBox);
+    fv_frame.set_color(Color::Background);
+    let mut fv_img = PngImage::load("src/dms.png").unwrap();
+    fv_img.scale(30, 30, true, true);
+    fv_frame.set_image(Some(fv_img));
     let mut anim_bar = AnimationProgress::new();
     let mut animation = false;
 
@@ -62,6 +70,7 @@ async fn main() -> MyResult<()> {
 
     // drop types window
     let mut droptypes_scroll = Scroll::new(200, 130, 1050, 750, None);
+    droptypes_scroll.set_scrollbar_size(10);
     droptypes_scroll.set_type(ScrollType::Vertical);
     droptypes_scroll.begin();
     let number_of_cols = 4;
@@ -113,6 +122,7 @@ async fn main() -> MyResult<()> {
     droptypes_scroll.hide();
     add_droptype.hide();
     update_droptype.hide();
+    fv_frame.hide();
 
     app_window.make_resizable(true);
     app_window.end();
@@ -233,6 +243,7 @@ async fn main() -> MyResult<()> {
                 stop_animation(&mut animation, &mut anim_bar);
                 app_window.remove(&*anim_bar);
                 main_text.set_pos(200, 50);
+                fv_frame.show();
                 sidebar_window.show();
                 redraw();
                 tx.send(Message::DropTypes(db));
@@ -270,7 +281,7 @@ async fn main() -> MyResult<()> {
                             tx.clone(),
                         );
                         let new_dt =
-                            NewDTButton::new(210, 80, 200, 40, "New Drop Type", tx.clone());
+                            NewDTButton::new(245, 80, 150, 40, "New Drop Type", tx.clone());
                         droptypes_scroll.add(&*new_dt);
                         droptypes_scroll.show();
                         redraw()
@@ -363,7 +374,7 @@ async fn main() -> MyResult<()> {
                             tx.clone(),
                         );
                         let new_dt =
-                            NewDTButton::new(210, 80, 200, 40, "New Drop Type", tx.clone());
+                            NewDTButton::new(230, 80, 160, 40, "New Drop Type", tx.clone());
                         droptypes_scroll.add(&*new_dt);
                         redraw()
                     }

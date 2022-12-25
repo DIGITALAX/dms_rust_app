@@ -281,6 +281,7 @@ pub struct NewDTButton {
 impl NewDTButton {
     pub fn new(x: i32, y: i32, w: i32, h: i32, label: &str, tx: Sender<Message>) -> Self {
         let mut new_dt_btn = Button::new(x, y, w, h, None).with_label(&label.to_uppercase());
+        new_dt_btn.set_label_size(10);
         new_dt_btn.clear_visible_focus();
         new_dt_btn.set_frame(FrameType::FlatBox);
         new_dt_btn.set_color(Color::DarkYellow);
@@ -289,11 +290,13 @@ impl NewDTButton {
         new_dt_btn.handle(move |b, ev| match ev {
             Event::Enter => {
                 set_cursor(Cursor::Hand);
+                b.set_color(Color::Cyan);
                 redraw();
                 true
             }
             Event::Leave => {
                 set_cursor(Cursor::Default);
+                b.set_color(Color::DarkYellow);
                 redraw();
                 true
             }
